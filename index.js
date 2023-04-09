@@ -71,12 +71,13 @@ app.delete('/RemoveCourseFromCart/:course_id', isAuthorize, userContoller.delete
 app.post('/addToWishlist', isAuthorize, userContoller.addToWistlist)
 app.get('/getWishList', isAuthorize, userContoller.getWishItems)
 app.delete('/deleteCourseWishList/:course_id', isAuthorize, userContoller.deleteCourseWishlist)
-
-
-
-
 app.post('/purchase/:course_id', isAuthorize, userContoller.purchase)
-app.post('/Course_progress/:course_id', isAuthorize, userContoller.CourseProgress)
+app.post('/Course_progress/:course_id/:video_id', isAuthorize, userContoller.CourseProgress)
+app.post('/generateCertificate/:course_id', isAuthorize, userContoller.generateCertificate)
+app.post('/updateVideoProgressDirectComplete/:course_id/:video_id', isAuthorize, userContoller.updateVideoProgressDirectComplete)
+
+
+
 
 
 app.post('/addInstructor', instructorContoller.addInstructor)

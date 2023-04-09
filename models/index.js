@@ -21,8 +21,6 @@ sequelize.authenticate()
   db.instructor = require('./instructor')(sequelize,DataTypes)
   db.course = require('./course')(sequelize,DataTypes)
   db.Purchase = require('./studentCourse')(sequelize,DataTypes)
-  db.courseVideo = require('./course_video')(sequelize,DataTypes)
-  db.courseProgress = require('./courseProgress')(sequelize,DataTypes)
   db.certificate = require('./certificate')(sequelize,DataTypes)
   db.addToCart = require('./addToCart')(sequelize,DataTypes)
   db.StudentWishlist = require('./StudentWishlist')(sequelize,DataTypes)
@@ -30,6 +28,8 @@ sequelize.authenticate()
   db.curriculumSection = require('./curriculumSection')(sequelize,DataTypes)
   db.sectionVideo = require('./section_video')(sequelize,DataTypes)
   db.assignments = require('./assignments')(sequelize,DataTypes)
+  db.CourseVideoProgress = require('./CourseVideoProgress')(sequelize,DataTypes)
+
 
 
 
@@ -54,17 +54,17 @@ sequelize.authenticate()
  db.Purchase.belongsTo( db.course, { foreignKey: 'course_id' });
 
 
- db.course.hasMany(  db.courseVideo, { foreignKey: 'course_id' });
- db.courseVideo.belongsTo( db.course, { foreignKey: 'course_id' });
+//  db.course.hasMany(  db.courseVideo, { foreignKey: 'course_id' });
+//  db.courseVideo.belongsTo( db.course, { foreignKey: 'course_id' });
 
- db.course.hasMany(  db.courseProgress, { foreignKey: 'course_id' });
- db.courseProgress.belongsTo( db.course, { foreignKey: 'course_id' });
+ db.course.hasMany(  db.CourseVideoProgress, { foreignKey: 'course_id' });
+ db.CourseVideoProgress.belongsTo( db.course, { foreignKey: 'course_id' });
 
- db.courseVideo.hasMany(db.courseProgress, { foreignKey: 'video_id' });
- db.courseProgress.belongsTo( db.courseVideo, { foreignKey: 'video_id' });
+ db.sectionVideo.hasMany(db.CourseVideoProgress, { foreignKey: 'video_id' });
+ db.CourseVideoProgress.belongsTo( db.sectionVideo, { foreignKey: 'video_id' });
 
- db.Student.hasMany( db.courseProgress, { foreignKey: 'student_id' });
- db.courseProgress.belongsTo( db.Student, { foreignKey: 'student_id' });
+ db.Student.hasMany( db.CourseVideoProgress, { foreignKey: 'student_id' });
+ db.CourseVideoProgress.belongsTo( db.Student, { foreignKey: 'student_id' });
 
  db.course.hasMany(  db.certificate, { foreignKey: 'course_id' });
  db.certificate.belongsTo( db.course, { foreignKey: 'course_id' });

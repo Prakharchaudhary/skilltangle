@@ -58,32 +58,6 @@ module.exports = (sequelize,DataTypes)=>{
       timestamps: false,
     });
     
-    // sectionVideo.beforeCreate(async (sectionVideo, options) => {
-    //     // Set the position to the current number of videos in the section plus one
-    //     try {
-    //       const count = await sectionVideo.count({
-    //         where: {
-    //           section_id: sectionVideo.section_id,
-    //         },
-    //         transaction: options.transaction,
-    //       });
-    //       sectionVideo.position = count + 1;
-    //     } catch (err) {
-    //       console.error(err);
-    //       throw err;
-    //     }
-    //   });
-
-    // sectionVideo.beforeCreate(async (sectionVideo, options) => {
-    //     // Set the position to the current number of videos in the section plus one
-    //     const { count } = await sectionVideo.findAndCountAll({
-    //       where: {
-    //         section_id: sectionVideo.section_id,
-    //       },
-    //       transaction: options.transaction,
-    //     });
-    //     sectionVideo.position = count + 1;
-    //   });
     sectionVideo.beforeCreate((sectionVideo, options) => {
         // Set the position to the current number of videos in the section plus one
         return sectionVideo.constructor.findAll({
