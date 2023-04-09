@@ -5,15 +5,13 @@ var CoursePurchase = db.Purchase
 var CartStudent = db.addToCart
 var Instructor = db.instructor
 var Wishlisht = db.StudentWishlist
+var sectionVideo = db.sectionVideo
+var CourseVideoProgress = db.CourseVideoProgress
+var Certificate = db.certificate
+var curriculumSection = db.curriculumSection
 
 
 
-
-
-
-
-var courseProgress = db.courseProgress
-var courseVideo = db.courseVideo
 
 const sendMail = require('../helper/sendMail')
 
@@ -39,8 +37,7 @@ const generateToken = (student_id) => {
 
 
 
-  // const bcrypt = require('bcrypt');
-  const saltRounds = 10; // define the number of salt rounds to use
+  const saltRounds = 10; 
   
   const addStudent = async (req, res) => {
    
@@ -441,66 +438,180 @@ const generateToken = (student_id) => {
 
 
 
-    const CourseProgress = async (req, res) => {
-      const courseId = req.params.course_id;
-      const videoId = req.body.video_id;
-      const currentTime = req.body.current_time;
-    
-      try {
-        const token = req.headers.authorization.split(' ')[1];
-    
-        jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
-          if (err) {
-            console.error('Error verifying token:', err);
-            return res.status(401).json({ message: 'Unauthorized access.' });
-          }
-          const studentId = decodedToken.student_id;
-    
-          const coursePurchased = await CoursePurchase.findOne({
-            where: { student_id: studentId, course_id: courseId },
-          });
-    
-          if (!coursePurchased) {
-            return res.status(401).json({ message: 'You have not purchased this course.' });
-          }
-    
-          const CourseVideo = await courseVideo.findOne({
-            where: { course_id: courseId, video_id: videoId },
-          });
-    
-          if (!CourseVideo) {
-            return res.status(404).json({ message: 'Video not found for this course' });
-          }
-    
-          const courseprogress = await courseProgress.findOne({
-            where: { student_id: studentId, course_id: courseId, video_id: videoId },
-          });
-    
-          if (!courseprogress) {
-            await courseProgress.create({
-              student_id: studentId,
-              course_id: courseId,
-              video_id: videoId,
-              watched_duration_seconds: currentTime,
-            });
-          } else {
-            if (currentTime > courseprogress.watched_duration_seconds) {
-              await courseProgress.update(
-                { watched_duration_seconds: currentTime },
-                { where: { student_id: studentId, course_id: courseId, video_id: videoId } }
-              );
-            }
-          }
-    
-          res.status(200).send({ message: 'Course progress updated successfully' });
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: 'Error updating course progress' });
+const CourseProgress = async (req, res) => {
+  const courseId = req.params.course_id;
+  const videoId = req.params.video_id;
+  const currentTime = req.body.current_time;
+
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
+      if (err) {
+        console.error('Error verifying token:', err);
+        return res.status(401).json({ message: 'Unauthorized access.' });
       }
-    };
+      const studentId = decodedToken.student_id;
+
+      const coursePurchased = await CoursePurchase.findOne({
+        where: { student_id: studentId, course_id: courseId },
+      });
+
+      if (!coursePurchased) {
+        return res.status(401).json({ message: 'You have not purchased this course.' });
+      }
+
+      const courseVideo = await sectionVideo.findOne({
+        where: { course_id: courseId, video_id: videoId },
+      });
+
+      if (!courseVideo) {
+        return res.status(404).json({ message: 'Video not found for this course' });
+      }
+
+      const course_Progress = await CourseVideoProgress.findOne({
+        where: { student_id: studentId, course_id: courseId, video_id: videoId },
+      });
+
+      if (!course_Progress) {
+        await CourseVideoProgress.create({
+          student_id: studentId,
+          course_id: courseId,
+          video_id: videoId,
+          watched_duration_seconds: currentTime,
+          video_duration_seconds: courseVideo.duration,
+          is_complete: false,
+        });
+      } else {
+        if (currentTime >= courseVideo.duration) {
+          await CourseVideoProgress.update(
+            { watched_duration_seconds: currentTime, is_complete: true },
+            { where: { student_id: studentId, course_id: courseId, video_id: videoId } }
+          );
+        } else {
+          await CourseVideoProgress.update(
+            { watched_duration_seconds: currentTime },
+            { where: { student_id: studentId, course_id: courseId, video_id: videoId } }
+          );
+        }
+      }
+
+      res.status(200).send({ message: 'Course progress updated successfully' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: 'Error updating course progress' });
+  }
+};
+
+
+const updateVideoProgressDirectComplete = async (req, res) => {
+  const courseId = req.params.course_id;
+  const videoId = req.params.video_id;
+
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
+      if (err) {
+        console.error('Error verifying token:', err);
+        return res.status(401).json({ message: 'Unauthorized access.' });
+      }
+      const studentId = decodedToken.student_id;
+
+      const coursePurchased = await CoursePurchase.findOne({
+        where: { student_id: studentId, course_id: courseId },
+      });
+
+      if (!coursePurchased) {
+        return res.status(401).json({ message: 'You have not purchased this course.' });
+      }
+
+      const courseVideo = await sectionVideo.findOne({
+        where: { course_id: courseId, video_id: videoId },
+      });
+
+      if (!courseVideo) {
+        return res.status(404).json({ message: 'Video not found for this course' });
+      }
+
+      const course_Progress = await CourseVideoProgress.findOne({
+        where: { student_id: studentId, course_id: courseId, video_id: videoId },
+      });
+
+      if (!course_Progress) {
+        await CourseVideoProgress.create({
+          student_id: studentId,
+          course_id: courseId,
+          video_id: videoId,
+          watched_duration_seconds: courseVideo.duration,
+          video_duration_seconds: courseVideo.duration,
+          is_complete: true,
+        });
+      } else {
+        await CourseVideoProgress.update(
+          { is_complete: true },
+          { where: { student_id: studentId, course_id: courseId, video_id: videoId } }
+        );
+      }
+
+      res.status(200).send({ message: 'Video progress updated successfully' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: 'Error updating video progress' });
+  }
+};
+
+
+const generateCertificate = async (req, res) => {
+  const courseId = req.params.course_id;
+
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
+      if (err) {
+        console.error('Error verifying token:', err);
+        return res.status(401).json({ message: 'Unauthorized access.' });
+      }
+
+      console.log('decodedToken:', decodedToken);
+
+      const studentId = decodedToken.student_id;
+
+      const sections = await curriculumSection.findAll({ where: { course_id: courseId } });
+
+      for (const section of sections) {
+        const sectionVideos = await sectionVideo.findAll({ where: { section_id: section.section_id } });
+
+        for (const video of sectionVideos) {
+          const videoProgress = await CourseVideoProgress.findOne({
+            where: { student_id: studentId, video_id: video.video_id },
+          });
+          if (!videoProgress || !videoProgress.is_complete) {
+            return res.status(401).json({ message: 'You have not completed all the videos in this course yet.' });
+          }
+        }
+      }
+
+      const certificate = await Certificate.create({
+        student_id: studentId,
+        course_id: courseId,
+      });
+
+      return res.status(200).json({ message: 'Certificate generated successfully', Certificate: certificate });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: 'Error generating certificate' });
+  }
+};
+
+
+
 
 
 
   module.exports = {addStudent,verifyEmail,studentLogin, purchase,CourseProgress,addToCart,getCartItemsByStudent,
-    deleteCartItemByCourse_id ,addToWistlist,getWishItems,deleteCourseWishlist}
+    deleteCartItemByCourse_id ,addToWistlist,getWishItems,deleteCourseWishlist,updateVideoProgressDirectComplete,generateCertificate}

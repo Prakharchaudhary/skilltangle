@@ -5,6 +5,7 @@ var Instructor = db.instructor
 var course = db.course
 var courseVideo = db.courseVideo
 var courseProgress = db.courseProgress
+var CourseVideoProgress = db.CourseVideoProgress
 var Certificate = db.certificate
 var Curriculum = db.courseCurriculum
 var Section = db.curriculumSection
