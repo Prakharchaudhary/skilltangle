@@ -13,6 +13,7 @@ var curriculumSection = db.curriculumSection
 
 
 
+
 const sendMail = require('../helper/sendMail')
 
 
@@ -150,6 +151,28 @@ const generateToken = (student_id) => {
         });
     };
 
+
+    
+    const getCourse = async (req, res) => {
+
+      const token = req.headers.authorization.split(' ')[1];
+    
+      if (!token) {
+        return res.status(401).json({ success: false, message: 'Authentication failed: Missing token' });
+      }
+    
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+        const studentId = decoded.student_id;
+    
+        const Course = await course.findAll();
+    
+        return res.status(200).json({ success: true, Course });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+      }
+    };
 
 
 
@@ -613,5 +636,5 @@ const generateCertificate = async (req, res) => {
 
 
 
-  module.exports = {addStudent,verifyEmail,studentLogin, purchase,CourseProgress,addToCart,getCartItemsByStudent,
+  module.exports = {addStudent,verifyEmail,studentLogin, getCourse,purchase,CourseProgress,addToCart,getCartItemsByStudent,
     deleteCartItemByCourse_id ,addToWistlist,getWishItems,deleteCourseWishlist,updateVideoProgressDirectComplete,generateCertificate}

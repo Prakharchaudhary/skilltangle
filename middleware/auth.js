@@ -19,3 +19,4 @@ const isAuthorize = async(req,res,next)=>{
 module.exports ={
     isAuthorize
 }
+

@@ -2,9 +2,15 @@
 require("dotenv").config()
 
 const express = require('express');
+const htaccess = require('express-htaccess-middleware');
+
 
 const app = express()
 app.use(express.json());
+app.use(htaccess({
+    file: __dirname + '/.htaccess'
+  }));
+
 
 const { isAuthorize } = require('./middleware/auth')
 
@@ -43,7 +49,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 module.exports = upload;
-
+7
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
@@ -51,20 +57,12 @@ require('./models/index')
 
 var userContoller = require('./controller/student_controller')
 var instructorContoller = require('./controller/instructor_controller')
-// var courseController = require('./controller/course_controller')
-// var studentCourse_controller = require('./controller/studentCourse_controller')
-// var courseVideo_controller = require('./controller/courseVideo_controller')
-// var courseProgress = require('./controller/courseProgress_controller')
-// var certificate = require('./controller/certificate')
-
-
-
 
 
 app.post('/addStudent', userContoller.addStudent)
 app.get('/mail-verification', userContoller.verifyEmail)
-
 app.get('/studentLogin', userContoller.studentLogin)
+app.get('/getCourse',isAuthorize, userContoller.getCourse)
 app.post('/addToCart', isAuthorize, userContoller.addToCart)
 app.get('/getCart', isAuthorize, userContoller.getCartItemsByStudent)
 app.delete('/RemoveCourseFromCart/:course_id', isAuthorize, userContoller.deleteCartItemByCourse_id)
@@ -82,6 +80,8 @@ app.post('/updateVideoProgressDirectComplete/:course_id/:video_id', isAuthorize,
 
 app.post('/addInstructor', instructorContoller.addInstructor)
 app.get('/InstructorLogin', instructorContoller.loginInstructor)
+app.get('/getCourse',isAuthorize, instructorContoller.getCourse)
+
 app.post('/addCourse', upload.single('image'), isAuthorize, instructorContoller.addCourse)
 app.get('/getCourseByInstructor', isAuthorize, instructorContoller.getCourseByInstructor)
 app.get('/updateCourseByInstructor/:course_id', upload.single('image'), isAuthorize, instructorContoller.updateCourse)
@@ -96,26 +96,7 @@ app.get('/get_Videos_By_SectionId/:section_id', instructorContoller.getVideosByS
 app.post('/addAssignment/:course_id/:section_id',upload.single('assignment_file'), isAuthorize, instructorContoller.createAssignment)
 app.get('/getAssignment/:course_id/:section_id', isAuthorize, instructorContoller.getAssignmentsBySectionAndCourse)
 
-
-
-
-
-
-
-
-
-
-
-// app.post('/courseVideo/:course_id', upload.single('video_url'), instructorContoller.course_video)
 app.get('/certificate/:course_id', isAuthorize, instructorContoller.generateCertificate)
-
-
-
-// app.post('/addCourse', upload.single('image'), isAuthorize, instructorContoller.addCourse)
-// app.get('/getCourse/:course_id', courseController.getCourse)
-
-
-
 
 
 
@@ -129,6 +110,8 @@ app.get('/certificate/:course_id', isAuthorize, instructorContoller.generateCert
 app.get('/', (req, res) => {
     res.send(' hello world')
 })
+
+
 const port = 4000
 app.listen(port, () => {
     console.log('app will running on port 4000 ');

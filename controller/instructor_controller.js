@@ -92,6 +92,28 @@ const generateToken = (student_id) => {
   };
 
 
+  const getCourse = async (req, res) => {
+
+    const token = req.headers.authorization.split(' ')[1];
+  
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Authentication failed: Missing token' });
+    }
+  
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+      const studentId = decoded.student_id;
+  
+      const Course = await course.findAll();
+  
+      return res.status(200).json({ success: true, Course });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+
   const addCourse = async (req, res) => {
     try {
 
@@ -108,7 +130,7 @@ const generateToken = (student_id) => {
         
         const instructor_id = decodedToken.instructor_id;
         const instructor_name = decodedToken.name;
-        console.log(instructor_name);
+        // console.log(instructor_name);
 
         if (!course_name || !description || !language || !price || !rating || !req.file || !requirement) {
           return res.status(400).send({ message: 'All fields are required' });
@@ -681,6 +703,6 @@ async function getAssignmentsBySectionAndCourse(req, res) {
   
 
   
-  module.exports = {addInstructor,loginInstructor,addCourse,generateCertificate,getCourseByInstructor,
+  module.exports = {addInstructor,loginInstructor,getCourse,addCourse,generateCertificate,getCourseByInstructor,
     updateCourse,deleteCourse,createCurriculum,getCurriculum,createSection,getCurriculumdetailsWithSection,
     uploadVideo,getVideosBySectionId,getVideosBySectionIdAndInstructor,createAssignment,getAssignmentsBySectionAndCourse}
